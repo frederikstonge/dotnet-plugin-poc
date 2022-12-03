@@ -1,0 +1,48 @@
+﻿@page "/"
+@using PluginBase;
+@inject IApplicationLifetime applicationLifetime
+@inject IEnumerable<IPlugin> plugins
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+<button class="btn btn-primary" @onclick="InstallPlugin">Install Plugin</button>
+
+<button class="btn btn-primary" @onclick="Restart">Restart app</button>
+
+<button class="btn btn-primary" @onclick="Execute">Execute</button>
+
+@code 
+{
+    private void Restart()
+    {
+        applicationLifetime.Restart();
+    }
+
+    private void InstallPlugin()
+    {
+        var currentyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()!.Location);
+        var path = Path.Combine(currentyPath!, "..\\..\\..\\..\\", "TestPlugin\\bin");
+        var files = Directory.GetFiles(path, "*.nupkg", SearchOption.AllDirectories);
+        foreach (var file in files)
+        {
+            File.Copy(file, Path.Combine(Program.PluginPath, Path.GetFileName(file)));
+        }
+    }
+
+    private void Execute()
+    {
+        if (plugins != null)
+        {
+            foreach (var plugin in plugins)
+            {
+                plugin.Execute();
+            }
+        }
+    }
+}
